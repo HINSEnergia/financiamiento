@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hoja de Ruta: Financiamiento para Adaptación Climática en Argentina</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Calm Earth -->
+    <!-- Application Structure Plan: The SPA is designed as an interactive dashboard with four main tabs: 'Inicio' (overview with key stats), 'Buscador de Financiamiento' (core interactive tool to filter funding by sector/type), 'Tipos de Proyectos' (details on eligible projects for Construction/Energy), and 'Desafíos y Estrategias' (a visual summary of barriers and solutions). This structure transforms the linear report into a user-centric tool, allowing companies to quickly find relevant information based on their specific needs (their sector) rather than reading through the entire document. The filterable card system for financing is the centerpiece, making dense table data easily digestible and comparable. -->
+    <!-- Visualization & Content Choices: 
+        - Inicio: Goal: Inform/Motivate. Viz: Two Chart.js Donut charts to show the small % of finance for adaptation and its public-sector dominance. Justification: These key stats are buried in the text; visualizing them provides immediate context and highlights the opportunity for private sector involvement.
+        - Buscador de Financiamiento: Goal: Organize/Compare. Viz: Interactive HTML cards powered by JS. Interaction: Users click filter buttons (sector/type) to dynamically show/hide cards. Justification: This replaces static tables (report's Tables 2 & 3) with a user-driven discovery tool, which is far more efficient and engaging.
+        - Desafíos y Estrategias: Goal: Compare/Inform. Viz: HTML/Tailwind grid layout. Interaction: Static visual comparison. Justification: Presents complex barriers and solutions from the report's Table 4 in a scannable, side-by-side format using icons for clarity, improving on the original dense table.
+        - Library/Method: Chart.js for canvas-based charts, Vanilla JS for all interactions, and Tailwind CSS for layout and styling. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 640px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .tab-button.active {
+            border-color: #059669; /* emerald-600 */
+            color: #059669;
+            background-color: #D1FAE5; /* emerald-100 */
+        }
+        .filter-button.active {
+            background-color: #059669; /* emerald-600 */
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+    <div class="container mx-auto p-4 md:p-8">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Hoja de Ruta Interactiva de Financiamiento Sostenible</h1>
+            <p class="text-lg text-gray-600">Oportunidades de adaptación al cambio climático para empresas en Argentina.</p>
+        </header>
+
+        <nav class="flex flex-wrap justify-center gap-2 mb-8">
+            <button data-tab="inicio" class="tab-button active text-sm md:text-base font-semibold py-2 px-4 rounded-full border-2 border-transparent transition-colors duration-300">
+                🌱 Inicio
+            </button>
+            <button data-tab="buscador" class="tab-button text-sm md:text-base font-semibold py-2 px-4 rounded-full border-2 border-transparent transition-colors duration-300">
+                🔍 Buscador de Financiamiento
+            </button>
+            <button data-tab="proyectos" class="tab-button text-sm md:text-base font-semibold py-2 px-4 rounded-full border-2 border-transparent transition-colors duration-300">
+                🏗️ Tipos de Proyectos
+            </button>
+            <button data-tab="desafios" class="tab-button text-sm md:text-base font-semibold py-2 px-4 rounded-full border-2 border-transparent transition-colors duration-300">
+                🚧 Desafíos y Estrategias
+            </button>
+        </nav>
+
+        <main>
+            <div id="content-inicio" class="tab-content">
+                <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                    <h2 class="text-2xl font-bold mb-4 text-emerald-700">El Desafío y la Oportunidad de la Adaptación Climática</h2>
+                    <p class="text-gray-700 mb-4">
+                        Argentina enfrenta una exposición significativa a los impactos del cambio climático, como sequías e inundaciones. La inacción resulta mucho más costosa que la inversión preventiva. El financiamiento sostenible, que integra criterios ambientales y sociales, es clave para movilizar el capital necesario y transformar este desafío en una oportunidad de crecimiento y resiliencia para el sector privado.
+                    </p>
+                    <p class="text-gray-700">
+                        Sin embargo, existe una brecha crítica: la mayor parte del financiamiento climático se destina a mitigación (reducir emisiones), no a adaptación (aumentar la resiliencia). Esta aplicación explora las oportunidades existentes para que su empresa pueda acceder a fondos y liderar la transición hacia un futuro más sostenible.
+                    </p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold text-center mb-4">Distribución del Financiamiento Climático Global</h3>
+                        <p class="text-sm text-center text-gray-500 mb-4">Solo una pequeña fracción se destina a proyectos de adaptación.</p>
+                        <div class="chart-container">
+                            <canvas id="adaptationFinanceChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold text-center mb-4">Origen de los Fondos para Adaptación</h3>
+                         <p class="text-sm text-center text-gray-500 mb-4">El sector público domina, evidenciando una gran oportunidad para el capital privado.</p>
+                        <div class="chart-container">
+                            <canvas id="adaptationSourceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-buscador" class="tab-content hidden">
+                 <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                    <h2 class="text-2xl font-bold mb-4 text-emerald-700">Buscador de Líneas de Financiamiento</h2>
+                    <p class="text-gray-700 mb-6">
+                        Utilice los filtros para encontrar las fuentes de financiamiento más relevantes para su empresa. Seleccione su sector y el tipo de institución para refinar la búsqueda y descubrir las oportunidades disponibles.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Filtrar por Sector:</label>
+                            <div id="sector-filters" class="flex flex-wrap gap-2">
+                                <button data-filter-group="sector" data-filter="all" class="filter-button active bg-gray-200 text-gray-700 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300">Todos</button>
+                                <button data-filter-group="sector" data-filter="construccion" class="filter-button bg-gray-200 text-gray-700 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300">Construcción</button>
+                                <button data-filter-group="sector" data-filter="energia" class="filter-button bg-gray-200 text-gray-700 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300">Energía</button>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Filtrar por Tipo de Institución:</label>
+                            <div id="type-filters" class="flex flex-wrap gap-2">
+                                <button data-filter-group="type" data-filter="all" class="filter-button active bg-gray-200 text-gray-700 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300">Todos</button>
+                                <button data-filter-group="type" data-filter="nacional" class="filter-button bg-gray-200 text-gray-700 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300">Nacional/Provincial</button>
+                                <button data-filter-group="type" data-filter="privado" class="filter-button bg-gray-200 text-gray-700 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300">Privado</button>
+                                <button data-filter-group="type" data-filter="regional" class="filter-button bg-gray-200 text-gray-700 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300">Regional</button>
+                                <button data-filter-group="type" data-filter="internacional" class="filter-button bg-gray-200 text-gray-700 py-2 px-4 rounded-full text-sm font-semibold transition-colors duration-300">Internacional</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="financing-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            </div>
+
+            <div id="content-proyectos" class="tab-content hidden">
+                <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                    <h2 class="text-2xl font-bold mb-4 text-emerald-700">Proyectos Elegibles para Financiamiento de Adaptación</h2>
+                    <p class="text-gray-700">
+                        El financiamiento para adaptación cubre una amplia gama de proyectos que buscan reducir la vulnerabilidad y aumentar la resiliencia ante el cambio climático. A continuación se detallan las principales categorías de proyectos elegibles para los sectores de Construcción y Energía, que son pilares estratégicos en esta transición.
+                    </p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-center">🏗️ Sector Construcción</h3>
+                        <div class="space-y-4">
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <h4 class="font-bold text-lg">Infraestructura Resiliente</h4>
+                                <p class="text-sm text-gray-600">Obras que soportan y mitigan efectos de eventos climáticos extremos, como sistemas de gestión de inundaciones, infraestructura verde (parques, techos verdes) y sistemas de alerta temprana.</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <h4 class="font-bold text-lg">Materiales Sostenibles y Bioconstrucción</h4>
+                                <p class="text-sm text-gray-600">Uso de materiales de bajo impacto ambiental como ladrillos ecológicos, cementos con aditivos, aislantes reciclados y técnicas de bioconstrucción con madera, barro y paja para diseños bioclimáticos.</p>
+                            </div>
+                             <div class="bg-white p-4 rounded-lg shadow">
+                                <h4 class="font-bold text-lg">Eficiencia Energética en Edificios</h4>
+                                <p class="text-sm text-gray-600">Proyectos para reducir la demanda energética, como recambio de iluminación a LED, aislamiento térmico, automatización de sistemas y diseños que aprovechan la luz y ventilación natural.</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <h4 class="font-bold text-lg">Gestión Hídrica en Edificaciones</h4>
+                                <p class="text-sm text-gray-600">Implementación de sistemas de captación y reutilización de agua de lluvia y tecnologías para el uso eficiente del agua en procesos industriales y edificaciones.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold mb-4 text-center">⚡ Sector Energía</h3>
+                        <div class="space-y-4">
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <h4 class="font-bold text-lg">Energías Renovables</h4>
+                                <p class="text-sm text-gray-600">Inversión en energía solar, eólica, biomasa e hidroeléctrica a pequeña escala para diversificar la matriz energética y hacerla menos vulnerable a interrupciones.</p>
+                            </div>
+                             <div class="bg-white p-4 rounded-lg shadow">
+                                <h4 class="font-bold text-lg">Eficiencia Energética</h4>
+                                <p class="text-sm text-gray-600">Modernización de instalaciones industriales, edificios y transporte para reducir la demanda total de energía y disminuir la presión sobre la infraestructura existente.</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <h4 class="font-bold text-lg">Infraestructura Energética Resiliente</h4>
+                                <p class="text-sm text-gray-600">Proyectos para fortalecer las redes eléctricas, incluyendo sistemas de almacenamiento (baterías), digitalización y sistemas de alerta temprana para gestionar riesgos climáticos.</p>
+                            </div>
+                            <div class="bg-white p-4 rounded-lg shadow">
+                                <h4 class="font-bold text-lg">Movilidad Sostenible</h4>
+                                <p class="text-sm text-gray-600">Adquisición de vehículos eléctricos o a hidrógeno y construcción de infraestructura de carga para reducir la dependencia de combustibles fósiles.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-desafios" class="tab-content hidden">
+                <div class="bg-white p-6 rounded-lg shadow-md mb-8">
+                    <h2 class="text-2xl font-bold mb-4 text-emerald-700">Principales Desafíos y Estrategias Clave</h2>
+                     <p class="text-gray-700">
+                        Acceder al financiamiento para la adaptación climática presenta obstáculos específicos. Conocerlos es el primer paso para superarlos. A continuación, se presentan las barreras más comunes junto con las estrategias recomendadas para que las empresas puedan navegar este panorama con éxito.
+                    </p>
+                </div>
+                <div class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-6 items-start bg-white p-5 rounded-lg shadow">
+                        <div>
+                            <h4 class="font-bold text-lg mb-2 flex items-center"><span class="text-2xl mr-3">⛓️</span>Barrera: Falta de Taxonomía Unificada</h4>
+                            <p class="text-sm text-gray-600 pl-9">No existen definiciones estandarizadas para proyectos de "adaptación", lo que genera incertidumbre en los inversores y aumenta los costos para evaluar proyectos.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-lg mb-2 flex items-center text-emerald-700"><span class="text-2xl mr-3">💡</span>Estrategia: Desarrollar Métricas Claras</h4>
+                            <p class="text-sm text-gray-600 pl-9">Las empresas deben definir y comunicar métricas claras de impacto que demuestren cómo sus proyectos contribuyen a la resiliencia, alineándose con marcos internacionales cuando sea posible.</p>
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-6 items-start bg-white p-5 rounded-lg shadow">
+                        <div>
+                           <h4 class="font-bold text-lg mb-2 flex items-center"><span class="text-2xl mr-3">📉</span>Barrera: Dificultad para Medir el Retorno</h4>
+                            <p class="text-sm text-gray-600 pl-9">El valor de la adaptación a menudo radica en "evitar pérdidas" futuras, un beneficio difícil de monetizar que no encaja en los modelos de retorno de inversión tradicionales.</p>
+                        </div>
+                        <div>
+                           <h4 class="font-bold text-lg mb-2 flex items-center text-emerald-700"><span class="text-2xl mr-3">🤝</span>Estrategia: Colaboración y Finanzas Mixtas</h4>
+                            <p class="text-sm text-gray-600 pl-9">Aprovechar instrumentos de "finanzas mixtas", donde fondos públicos (concesionales, garantías) reducen el riesgo para el capital privado, haciendo los proyectos más atractivos.</p>
+                        </div>
+                    </div>
+                     <div class="grid md:grid-cols-2 gap-6 items-start bg-white p-5 rounded-lg shadow">
+                        <div>
+                           <h4 class="font-bold text-lg mb-2 flex items-center"><span class="text-2xl mr-3">⏳</span>Barrera: Plazos de Retorno Largos</h4>
+                            <p class="text-sm text-gray-600 pl-9">Los proyectos de infraestructura resiliente tienen horizontes de inversión a largo plazo, que pueden no alinearse con las expectativas de rendimiento de corto plazo de muchos inversores.</p>
+                        </div>
+                        <div>
+                           <h4 class="font-bold text-lg mb-2 flex items-center text-emerald-700"><span class="text-2xl mr-3">🏦</span>Estrategia: Aprovechar Bancos de Desarrollo</h4>
+                            <p class="text-sm text-gray-600 pl-9">Aliarse con bancos de desarrollo (BID, BM, BNA, BICE), que tienen mandatos para financiar proyectos a largo plazo y pueden actuar como catalizadores para atraer a otros inversores.</p>
+                        </div>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-6 items-start bg-white p-5 rounded-lg shadow">
+                        <div>
+                           <h4 class="font-bold text-lg mb-2 flex items-center"><span class="text-2xl mr-3">🌪️</span>Barrera: Inestabilidad Económica y Regulatoria</h4>
+                            <p class="text-sm text-gray-600 pl-9">El contexto macroeconómico y la incertidumbre regulatoria en Argentina pueden disuadir la inversión privada a largo plazo y aumentar la percepción de riesgo.</p>
+                        </div>
+                        <div>
+                           <h4 class="font-bold text-lg mb-2 flex items-center text-emerald-700"><span class="text-2xl mr-3">📜</span>Estrategia: Alinear Proyectos con Políticas Nacionales</h4>
+                            <p class="text-sm text-gray-600 pl-9">Alinear los proyectos con el Plan Nacional de Adaptación (Ley 27520) para reducir el riesgo de política y demostrar el compromiso con las prioridades del país.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const financingData = [
+        {
+            institution: 'Banco de la Nación Argentina (BNA)',
+            program: 'Línea 803: Reconversión y Eficiencia Energética',
+            sectors: ['construccion', 'energia'],
+            type: 'nacional',
+            details: 'Financia proyectos de reforma para eficiencia energética en edificaciones, procesos productivos, y generación/distribución de energía renovable. Plazos de hasta 10 años.',
+            link: 'bna.com.ar'
+        },
+        {
+            institution: 'Consejo Federal de Inversiones (CFI)',
+            program: 'Financiamiento Verde',
+            sectors: ['construccion', 'energia'],
+            type: 'nacional',
+            details: 'Para MiPyMEs. Financia eficiencia hídrica, energías renovables, y mitigación de riesgos climáticos. Montos hasta $150M con plazos de hasta 60 meses.',
+            link: 'cfi.org.ar'
+        },
+        {
+            institution: 'Banco Credicoop',
+            program: 'Créditos para Cuidado del Medio Ambiente',
+            sectors: ['construccion', 'energia'],
+            type: 'privado',
+            details: 'Inversiones en eficiencia energética, riego, energías renovables y adecuaciones ambientales para PyMEs. Plazos de hasta 60 meses.',
+            link: 'bancocredicoop.coop'
+        },
+        {
+            institution: 'BBVA Argentina',
+            program: 'Soluciones Sostenibles para Empresas',
+            sectors: ['construccion', 'energia'],
+            type: 'privado',
+            details: 'Cubre eficiencia energética (LED, IoT), gestión de agua, infraestructura social, energías renovables y movilidad sostenible. Válido hasta 31/12/2025.',
+            link: 'bbva.com.ar'
+        },
+        {
+            institution: 'Santander Argentina',
+            program: 'Préstamos Sustentables para Empresas',
+            sectors: ['construccion', 'energia'],
+            type: 'privado',
+            details: 'Foco en eficiencia energética (recambio a LED) y compra de tecnología para mejorar la eficiencia energética. Sujeto a evaluación crediticia.',
+            link: 'santander.com.ar'
+        },
+        {
+            institution: 'Banco de Inversión y Comercio Exterior (BICE)',
+            program: 'Financiamiento para Renovables y Eficiencia',
+            sectors: ['energia'],
+            type: 'nacional',
+            details: 'Con fondos del BID y FVC, financia proyectos de energías renovables (solar, biogás) y eficiencia energética, principalmente para PyMEs.',
+            link: 'bice.com.ar'
+        },
+        {
+            institution: 'Banco Galicia',
+            program: 'Línea de Financiamiento Sostenible',
+            sectors: ['construccion', 'energia'],
+            type: 'privado',
+            details: 'Apoya proyectos con impacto positivo, incluyendo energías renovables y economía circular. Han emitido Obligaciones Negociables (ON) para estos fines.',
+            link: 'galicia.ar'
+        },
+        {
+            institution: 'Fiduciaria San Juan',
+            program: 'Créditos para Riego y Bienes de Capital',
+            sectors: ['construccion', 'energia'],
+            type: 'nacional',
+            details: 'Líneas con tasas subsidiadas para riego tecnificado, pozos, paneles solares e infraestructura productiva resiliente.',
+            link: 'sanjuan.gob.ar'
+        },
+        {
+            institution: 'Ministerio de Des. Productivo de Santa Fe',
+            program: 'Línea de financiamiento prosumidores',
+            sectors: ['energia'],
+            type: 'nacional',
+            details: 'Herramientas de financiamiento para proyectos de generación de energía renovable para autoconsumo y eficiencia energética en actividades productivas.',
+            link: 'santafe.gob.ar'
+        },
+        {
+            institution: 'Bancos Multilaterales (BID, BM, CAF)',
+            program: 'Programas Regionales y de País',
+            sectors: ['construccion', 'energia'],
+            type: 'internacional', /* Changed from 'multilateral' to 'internacional' */
+            details: 'Ofrecen financiamiento a gran escala, a menudo en asociación con gobiernos y bancos locales. Apoyan proyectos de infraestructura resiliente, energía renovable y reformas estructurales. El acceso suele ser a través de licitaciones o entidades acreditadas.',
+            link: 'iadb.org / worldbank.org / caf.com'
+        },
+        {
+            institution: 'Fondos Climáticos (GCF, GEF, AF)',
+            program: 'Facilidad para el Sector Privado (PSF)',
+            sectors: ['construccion', 'energia'],
+            type: 'internacional', /* Changed from 'multilateral' to 'internacional' */
+            details: 'Fondos globales que buscan catalizar la inversión privada en adaptación y mitigación. El acceso es a través de "Entidades Acreditadas" (como BICE o bancos multilaterales) para proyectos de alto impacto.',
+            link: 'greenclimate.fund'
+        },
+        // Nuevas instituciones
+        {
+            institution: 'Agencia Francesa de Desarrollo (AFD)',
+            program: 'Proyectos Propios o implementadora de proyectos del Fondo Verde del Clima',
+            sectors: ['construccion', 'energia'],
+            type: 'internacional',
+            details: 'Institución bilateral de Francia. Con creciente cartera en Argentina. Actualmente en la región proyectos vinculados a temas de Residuos y Energéticos (Eficiencia Energética en Edificios, Movilidad Eléctrica, Energías Renovables).',
+            link: 'afd.fr'
+        },
+        {
+            institution: 'Banco Asiático de Inversión para la Infraestructura (AIIB)',
+            program: 'Financiamiento para Infraestructura Sostenible',
+            sectors: ['construccion', 'energia'],
+            type: 'internacional',
+            details: 'Banco multilateral de desarrollo, con fuerte impronta de la República Popular de China. Financia energía limpia, transporte sostenible, agua y saneamiento, infraestructura digital, y resiliencia climática.',
+            link: 'aiib.org'
+        },
+        {
+            institution: 'Banco Nórdico de Inversión (NIB)',
+            program: 'Inversión en Sostenibilidad y Resiliencia',
+            sectors: ['construccion', 'energia'],
+            type: 'internacional',
+            details: 'Institución multilateral de países nórdicos. Financia proyectos de inversión en energías limpias y eficiencia energética, transporte sostenible, agua y saneamiento, reducción de emisiones de GEI, innovación verde e infraestructura resiliente. Desde 2020 no financian proyectos fuera de Europa, y los proyectos deben estar vinculados a empresas Nórdicas.',
+            link: 'nib.int'
+        },
+        {
+            institution: 'Banco Nacional de Desenvolvimento Econômico e Social (BNDES)',
+            program: 'Líneas de Financiamiento para Sectores Productivos',
+            sectors: ['construccion', 'energia'],
+            type: 'regional',
+            details: 'Banco de Desarrollo Federal de Brasil, vinculado a sectores productivos. Financia proyectos de una amplia variedad de sectores. Los proyectos deben estar vinculados a empresas brasileñas.',
+            link: 'bndes.gov.br'
+        },
+        {
+            institution: 'Global Climate Partnership Fund (GCPF)',
+            program: 'Financiamiento a Instituciones Financieras Locales',
+            sectors: ['construccion', 'energia'],
+            type: 'internacional',
+            details: 'GCPF fue fundado por el German Federal Ministry for the Environment, Nature Conservation, Building and Nuclear Safety (BMUB) y KfW en 2009. Proporciona financiamiento principalmente a instituciones financieras locales, que ofrecen subpréstamos para productos energéticos que benefician a pequeñas y medianas empresas y hogares privados.',
+            link: 'gcpf.lu'
+        },
+        {
+            institution: 'Fondo de Abu Dhabi para el Desarrollo',
+            program: 'Proyectos de Infraestructura y Agua',
+            sectors: ['construccion', 'energia'],
+            type: 'internacional',
+            details: 'Fondo Bilateral, enfocado en proyectos de infraestructura. Financia agua, saneamiento, riego, infraestructura, hidroeléctricas. Generalmente más vinculado al agua.',
+            link: 'adfd.ae'
+        },
+        {
+            institution: 'City Climate Finance Gap Fund',
+            program: 'Asistencia Técnica para Proyectos Urbanos Climáticos',
+            sectors: ['construccion', 'energia'],
+            type: 'internacional',
+            details: 'Opera en la órbita del Banco Europeo de Inversiones y del Banco Mundial. Otorga asistencia técnica y fortalecimiento institucional para que ciudades en países emergentes desarrollen proyectos urbanos con enfoque climático, incluyendo preparación de proyectos para energías renovables distribuidas, eficiencia urbana, e infraestructura resiliente.',
+            link: 'citygapfund.org'
+        },
+        {
+            institution: 'Fondo de la OPEP (OPEC Fund)',
+            program: 'Préstamos para el Desarrollo Sostenible',
+            sectors: ['construccion', 'energia'],
+            type: 'internacional',
+            details: 'Fondo Multilateral. Otorga préstamos al sector público y privado de países en desarrollo, y facilidades para el sector privado. Financia proyectos en agua, saneamiento, energía sostenible, telecomunicaciones e infraestructura en países en desarrollo.',
+            link: 'opecfund.org'
+        },
+        {
+            institution: 'Fondo Kuwaití para el Desarrollo',
+            program: 'Proyectos de Infraestructura Básica y Ambientales',
+            sectors: ['construccion', 'energia'],
+            type: 'internacional',
+            details: 'Fondo Bilateral, enfocado en proyectos de infraestructura básica (agua, saneamiento), energía, riego, transporte, y proyectos de impacto ambiental positivo, incluidos algunos de energía renovable.',
+            link: 'kuwait-fund.org'
+        },
+        {
+            institution: 'FONPLATA - Banco de Desarrollo',
+            program: 'Líneas de Financiamiento para Operaciones de Riesgo No Soberano',
+            sectors: ['construccion', 'energia'],
+            type: 'regional',
+            details: 'Línea de financiamiento para operaciones de riesgo no soberano, cooperaciones técnicas, y proyectos específicos de inversión en infraestructura, educación, salud, desarrollo de exportaciones, cambio climático y biodiversidad, industria, agua.',
+            link: 'fonplata.org'
+        },
+        {
+            institution: 'Global Innovation Lab for Climate Change ("The Lab")',
+            program: 'Cofinanciamiento de Instrumentos Financieros Sostenibles',
+            sectors: ['construccion', 'energia'],
+            type: 'internacional',
+            details: 'Busca cofinanciar proyectos de desarrollo sostenible en diferentes sectores para solucionar barreras para su aplicabilidad. Es un financiador de instrumentos financieros. El Laboratorio busca, selecciona, desarrolla y lanza soluciones financieras transformadoras para impulsar miles de millones de dólares de inversión privada en acciones para combatir el cambio climático en países en desarrollo.',
+            link: 'climatefinancelab.org'
+        },
+        {
+            institution: 'ICLEI - Transformative Actions Program (TAP)',
+            program: 'Asistencia para Proyectos Climáticos Urbanos',
+            sectors: ['construccion', 'energia'],
+            type: 'internacional',
+            details: 'ICLEI – Gobiernos Locales por la Sustentabilidad es una red global de más de 2.500 gobiernos locales y regionales comprometidos con el desarrollo urbano sostenible. TAP es una iniciativa global para ayudar a los gobiernos locales y regionales a transformar sus conceptos en proyectos sólidos y listos para la inversión, buscando desarrollar proyectos climáticos urbanos con el objetivo de mejorar su madurez técnica y conectarlos con fuentes de financiamiento e inversores.',
+            link: 'iclei.org/tap'
+        },
+        {
+            institution: 'BID Invest',
+            program: 'Financiamiento para el Sector Privado',
+            sectors: ['construccion', 'energia'],
+            type: 'internacional',
+            details: 'Institución de sector privado del Banco Interamericano de Desarrollo. Financia agronegocios, energía, instituciones financieras, fondos de inversión, manufactura, infraestructura social, transporte, turismo, agua y saneamiento, telecomunicaciones, medios y tecnología. Con mucho peso en el sector energía.',
+            link: 'idbinvest.org'
+        }
+    ];
+
+    const tabs = document.querySelectorAll('.tab-button');
+    const contents = document.querySelectorAll('.tab-content');
+
+    const switchTab = (tabId) => {
+        tabs.forEach(tab => {
+            tab.classList.toggle('active', tab.dataset.tab === tabId);
+        });
+        contents.forEach(content => {
+            content.classList.toggle('hidden', content.id !== `content-${tabId}`);
+        });
+    };
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+    });
+
+    const renderCharts = () => {
+        const adaptationFinanceCtx = document.getElementById('adaptationFinanceChart').getContext('2d');
+        new Chart(adaptationFinanceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Mitigación y Otros', 'Adaptación'],
+                datasets: [{
+                    data: [93, 7],
+                    backgroundColor: ['#E5E7EB', '#10B981'],
+                    borderColor: ['#F9FAFB', '#F9FAFB'],
+                    borderWidth: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: { callbacks: { label: (context) => `${context.label}: ${context.raw}%` } }
+                },
+                cutout: '60%'
+            }
+        });
+
+        const adaptationSourceCtx = document.getElementById('adaptationSourceChart').getContext('2d');
+        new Chart(adaptationSourceCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Financiamiento Público', 'Financiamiento Privado'],
+                datasets: [{
+                    data: [98, 2],
+                    backgroundColor: ['#9CA3AF', '#34D399'],
+                    borderColor: ['#F9FAFB', '#F9FAFB'],
+                    borderWidth: 4,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: { callbacks: { label: (context) => `${context.label}: ${context.raw}%` } }
+                },
+                cutout: '60%'
+            }
+        });
+    };
+    
+    const cardsContainer = document.getElementById('financing-cards-container');
+    const renderCards = () => {
+        cardsContainer.innerHTML = '';
+        financingData.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'financing-card bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300';
+            card.dataset.sectors = item.sectors.join(' ');
+            card.dataset.type = item.type;
+            
+            card.innerHTML = `
+                <h4 class="font-bold text-lg mb-1">${item.institution}</h4>
+                <p class="text-sm font-semibold text-emerald-600 mb-3">${item.program}</p>
+                <p class="text-sm text-gray-700 mb-4">${item.details}</p>
+                <div class="flex flex-wrap gap-2 text-xs mb-4">
+                    ${item.sectors.map(s => `<span class="bg-gray-200 text-gray-700 py-1 px-2 rounded-full">${s === 'construccion' ? '🏗️ Construcción' : '⚡ Energía'}</span>`).join('')}
+                    <span class="bg-blue-100 text-blue-800 py-1 px-2 rounded-full">${item.type.charAt(0).toUpperCase() + item.type.slice(1)}</span>
+                </div>
+                <a href="https://${item.link}" target="_blank" class="text-sm font-semibold text-emerald-700 hover:underline">Visitar sitio →</a>
+            `;
+            cardsContainer.appendChild(card);
+        });
+    };
+
+    let activeFilters = { sector: 'all', type: 'all' };
+    const filterCards = () => {
+        const cards = document.querySelectorAll('.financing-card');
+        cards.forEach(card => {
+            const showBySector = activeFilters.sector === 'all' || card.dataset.sectors.includes(activeFilters.sector);
+            const showByType = activeFilters.type === 'all' || card.dataset.type === activeFilters.type;
+            card.classList.toggle('hidden', !(showBySector && showByType));
+        });
+    };
+
+    document.querySelectorAll('.filter-button').forEach(button => {
+        button.addEventListener('click', () => {
+            const group = button.dataset.filterGroup;
+            const filter = button.dataset.filter;
+            activeFilters[group] = filter;
+
+            document.querySelectorAll(`button[data-filter-group="${group}"]`).forEach(btn => {
+                btn.classList.remove('active');
+            });
+            button.classList.add('active');
+            
+            filterCards();
+        });
+    });
+
+    renderCharts();
+    renderCards();
+});
+</script>
+</body>
+</html>
